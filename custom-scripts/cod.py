@@ -22,6 +22,7 @@ def read_file(path):
 
 def get_system_info():
     info = {}
+    
     data_hora = read_file('/proc/driver/rtc')
     lines = data_hora.splitlines()
 
@@ -37,7 +38,15 @@ def get_system_info():
     up_idle = read_file('/proc/uptime').split(' ')
     info.update({'uptime': up_idle[0]})
 
-    info['cpuinfo'] = read_file('/proc/cpuinfo')
+    cpu_model = read_file('/proc/cpuinfo')
+    lines = cpu_model.splitlines()
+
+    for line in lines:
+        if line.startswith('model name'):
+            model_name = line.split(':', 1)[1].strip()
+            break
+    info.update({'cpuinfo': model_name})
+    
     #info['cpu_capacity'] = read_file('/proc/cpuinfo')
     info['meminfo'] = read_file('/proc/meminfo')
     info['version'] = read_file('/proc/version')
