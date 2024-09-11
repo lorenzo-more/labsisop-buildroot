@@ -48,12 +48,43 @@ def get_system_info():
     info.update({'cpuinfo': model_name})
     
     #info['cpu_capacity'] = read_file('/proc/cpuinfo')
-    info['meminfo'] = read_file('/proc/meminfo')
+    
+    memory = read_file('/proc/meminfo')
+    lines = memory.splitlines()
+
+    for line in lines[:2]:
+        if line.startswith('MemTotal'):
+            memory_total = line.split(':', 1)[1].strip()[:-2]
+        elif line.startswith('MemFree'):
+            memory_free = line.split(':', 1)[1].strip()[:-2]
+    
+    m1 = int(memory_total)/1024
+    m2 = int(memory_free)/1024
+    m3 = m1 - m2
+
+    memory_info = f'Memória total: {round(m1, 2)} MB Memória usada: {round(m3, 2)} MB'
+
+    info.update({'meminfo': memory_info})
+
+    #info['meminfo'] = read_file('/proc/meminfo')
+    
+    
     info['version'] = read_file('/proc/version')
     #info['processes'] = read_file('/proc/{pid}/comm')
     #info['disk'] = read_file('/proc/')
     info['usb_devices'] = read_file('/sys/bus/usb/devices')
-    info['route'] = read_file('/proc/net/route')
+    
+    route_string = read_file('/proc/net/route')
+    lines = route_string.splitlines()
+
+    route_line = ''
+
+    for line in lines:
+        route_line += line + "\n"
+
+    info.update({'route': route_line})
+
+    #info['route'] = read_file('/proc/net/route')
     return info
 
 HOST_NAME = '127.0.0.1' # !!!REMEMBER TO CHANGE THIS!!!
