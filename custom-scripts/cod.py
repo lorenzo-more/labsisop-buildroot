@@ -34,7 +34,9 @@ def get_system_info():
     info_rtc = rtc_date + " " + rtc_time
     info.update({'rtc': info_rtc})
     
-    info['uptime'] = read_file('/proc/uptime')
+    up_idle = read_file('/proc/uptime').split(' ')
+    info.update({'uptime': up_idle[0]})
+
     info['cpuinfo'] = read_file('/proc/cpuinfo')
     #info['cpu_capacity'] = read_file('/proc/cpuinfo')
     info['meminfo'] = read_file('/proc/meminfo')
@@ -128,7 +130,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         <td>{info['rtc']}</td>
                     </tr>
                     <tr>
-                        <td>Uptime (segundos)</td>
+                        <td>Uptime (em segundos)</td>
                         <td>{info['uptime']}</td>
                     </tr>
                     <tr>
