@@ -1,5 +1,6 @@
 import time
 from http.server import BaseHTTPRequestHandler,HTTPServer
+import re
 
 # /proc/driver/rtc
 # /proc/uptime
@@ -21,8 +22,27 @@ def read_file(path):
 
 def get_system_info():
     info = {}
-    info['uptime'] = read_file('/proc/uptime')
+    data_hora = read_file('/proc/driver/rtc')
+    lines = data_hora.splitlines()
 
+    for line in lines[:2]:
+        if line.startswith('rtc_time'):
+            rtc_time = line.split(':', 1)[1].strip()
+        elif line.startswith('rtc_date'):
+            rtc_date = line.split(':', 1)[1].strip()
+
+    info_rtc = rtc_date + " " + rtc_time
+    info.update({'rtc': info_rtc})
+    
+    info['uptime'] = read_file('/proc/uptime')
+    info['cpuinfo'] = read_file('/proc/cpuinfo')
+    #info['cpu_capacity'] = read_file('/proc/cpuinfo')
+    info['meminfo'] = read_file('/proc/meminfo')
+    info['version'] = read_file('/proc/version')
+    #info['processes'] = read_file('/proc/{pid}/comm')
+    #info['disk'] = read_file('/proc/')
+    info['usb_devices'] = read_file('/sys/bus/usb/devices')
+    info['route'] = read_file('/proc/net/route')
     return info
 
 HOST_NAME = '127.0.0.1' # !!!REMEMBER TO CHANGE THIS!!!
@@ -95,7 +115,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 </div>
                 <div class="project-info">
                     <p><strong>Informações sobre o trabalho:</strong></p>
-                    <p>O objetivo deste trabalho é gerar uma distribuição Linux que possua um servidor Web e escrever uma página HTML para que esta forneca informações básicas sobre o funcionamento do sistema (target).</p>
+                    <p>O objetivo deste trabalho é gerar uma distribuição Linux que possua um servidor Web e escrever uma página HTML para que esta forneça informações básicas sobre o funcionamento do sistema (target).</p>
                     <p><b>Integrantes: Gabriel W. Piazenski, Gustavo W. da Silva e Lorenzo D. More</b></p>
                 </div>
                 <table class="info-table">
@@ -104,10 +124,45 @@ class MyHandler(BaseHTTPRequestHandler):
                         <th>Valor</th>
                     </tr>
                     <tr>
+                        <td>Data e hora</td>
+                        <td>{info['rtc']}</td>
+                    </tr>
+                    <tr>
                         <td>Uptime (segundos)</td>
                         <td>{info['uptime']}</td>
                     </tr>
-                    <!-- Add other rows here similarly -->
+                    <tr>
+                        <td>Modelo do processador e velocidade</td>
+                        <td>{info['cpuinfo']}</td>
+                    </tr>
+                    <tr>
+                        <td>Capacidade ocupada do processador (%)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Quantidade de memória RAM total e usada (MB)</td>
+                        <td>{info['meminfo']}</td>
+                    </tr>
+                    <tr>
+                        <td>Versão do sistema</td>
+                        <td>{info['version']}</td>
+                    </tr>
+                    <tr>
+                        <td>Lista de processos em execução (PID e nome)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Lista de unidades de disco, com capacidade total de cada unidade</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Lista de dispositivos USB, com a respectiva porta em que estão conectados</td>
+                        <td>{info['usb_devices']}</td>
+                    </tr>
+                    <tr>
+                        <td>Lista de adaptadores de rede, com o respectivo endereçamento IP de cada um</td>
+                        <td>{info['route']}</td>
+                    </tr>
                 </table>
             </div>
         </body>
