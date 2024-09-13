@@ -5,7 +5,7 @@ import re
 # /proc/driver/rtc
 # /proc/uptime
 # /proc/cpuinfo
-# capacidade ocupada do processador
+# /proc/stat capacidade ocupada do processador
 # /proc/meminfo
 # /proc/version
 # Lista de processos em execucao (PID e nome)
@@ -19,6 +19,13 @@ def read_file(path):
             return file.read()
     except Exception as e:
         return str(e)
+    
+def read_cpu_times():
+    with open('/proc/stat', 'r') as f:
+        line = f.readline()
+
+    parts = line.split()
+    return list(map(int, parts[1:9])) # see https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
 
 def get_system_info():
     info = {}
@@ -47,7 +54,23 @@ def get_system_info():
             break
     info.update({'cpuinfo': model_name})
     
-    #info['cpu_capacity'] = read_file('/proc/cpuinfo')
+    prev_times = read_cpu_times()
+    time.sleep(1)
+    current_times = read_cpu_times()
+
+    prev_total = sum(prev_times)
+    current_total = sum(current_times)
+
+    prev_idle = prev_times[3] + prev_times[4]
+    current_idle = current_times[3] + current_times[4]
+
+    total_dif = current_total - prev_total
+    idle = current_idle - prev_idle
+
+    cpu_usage = round((total_dif - idle) / total_dif * 100)
+
+    info.update({'cpu_capacity': cpu_usage})
+        
     
     memory = read_file('/proc/meminfo')
     lines = memory.splitlines()
@@ -179,7 +202,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     </tr>
                     <tr>
                         <td>Capacidade ocupada do processador (%)</td>
-                        <td>-</td>
+                        <td>{info['cpu_capacity']}%</td>
                     </tr>
                     <tr>
                         <td>Quantidade de memória RAM total e usada (MB)</td>
