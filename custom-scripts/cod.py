@@ -61,13 +61,13 @@ def get_system_info():
     prev_total = sum(prev_times)
     current_total = sum(current_times)
 
-    prev_idle = prev_times[3] + prev_times[4]
-    current_idle = current_times[3] + current_times[4]
+    prev_idle = prev_times[3] 
+    current_idle = current_times[3] 
 
     total_dif = current_total - prev_total
     idle = current_idle - prev_idle
 
-    cpu_usage = round((total_dif - idle) / total_dif * 100)
+    cpu_usage = round(((total_dif - idle) / total_dif * 100), 1)
 
     info.update({'cpu_capacity': cpu_usage})
         
@@ -85,7 +85,7 @@ def get_system_info():
     m2 = int(memory_free)/1024
     m3 = m1 - m2
 
-    memory_info = f'Memória total: {round(m1, 2)} MB Memória usada: {round(m3, 2)} MB'
+    memory_info = f'Memória total: {round(m1)} MB Memória usada: {round(m3)} MB'
 
     info.update({'meminfo': memory_info})
 
