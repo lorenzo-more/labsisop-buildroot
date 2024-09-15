@@ -1,3 +1,4 @@
+import os
 import time
 from http.server import BaseHTTPRequestHandler,HTTPServer
 import re
@@ -88,12 +89,28 @@ def get_system_info():
     memory_info = f'Memória total: {round(m1)} MB Memória usada: {round(m3)} MB'
 
     info.update({'meminfo': memory_info})
-
-    #info['meminfo'] = read_file('/proc/meminfo')
-    
     
     info['version'] = read_file('/proc/version')
-    #info['processes'] = read_file('/proc/{pid}/comm')
+    
+    processes = []
+
+    for pid in os.listdir('/proc'):
+        if pid.isdigit():
+            try:
+                with open(f'/proc/{pid}/comm', 'r') as f:
+                    pname = f.readline().strip()
+                processes.append((pid, pname))
+            except Exception:
+                continue
+
+    html_processes = '<ul>'
+    for pid, pname in processes:
+        html_processes += f"<li>{pid}: {pname}</li>"
+                
+    html_processes += '</ul>'
+    info.update({'processes': html_processes})
+
+
     #info['disk'] = read_file('/proc/')
     info['usb_devices'] = read_file('/sys/bus/usb/devices')
     
@@ -170,7 +187,6 @@ class MyHandler(BaseHTTPRequestHandler):
                 }}
                 .info-table td {{
                     background-color: #fff;
-                }}
             </style>
         </head>
         <body>
@@ -213,8 +229,8 @@ class MyHandler(BaseHTTPRequestHandler):
                         <td>{info['version']}</td>
                     </tr>
                     <tr>
-                        <td>Lista de processos em execução (PID e nome)</td>
-                        <td>-</td>
+                        <td>Lista de processos em execução (PID: nome)</td>
+                        <td>{info['processes']}</td>
                     </tr>
                     <tr>
                         <td>Lista de unidades de disco, com capacidade total de cada unidade</td>
