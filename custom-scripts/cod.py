@@ -1,7 +1,6 @@
 import os
-import time
+from time import sleep
 from http.server import BaseHTTPRequestHandler,HTTPServer
-import re
 
 # /proc/driver/rtc
 # /proc/uptime
@@ -56,7 +55,7 @@ def get_system_info():
     info.update({'cpuinfo': model_name})
     
     prev_times = read_cpu_times()
-    time.sleep(1)
+    sleep(1)
     current_times = read_cpu_times()
 
     prev_total = sum(prev_times)
@@ -110,8 +109,30 @@ def get_system_info():
     html_processes += '</ul>'
     info.update({'processes': html_processes})
 
+    lines = read_file('/proc/partitions').splitlines()
 
-    #info['disk'] = read_file('/proc/')
+    disk_info = []
+
+    for line in lines[2:]:
+        parts = line.split()
+        if len(parts) > 3:
+            major, minor, blocks, name = parts
+            blocks = (int(blocks) * 4096) / (1024 * 1024) # conversao de bloco pra MB
+
+            if 'loop' in name or 'sr' in name:
+                continue
+
+            disk_info.append((name, round(blocks)))
+
+    html_disk = '<ul>'
+    for name, blocks in disk_info:
+                html_disk += f"<li>{name}: {blocks} MB</li>"
+    html_disk += '</ul>'
+
+    info.update({'disk': html_disk})
+
+    
+
     info['usb_devices'] = read_file('/sys/bus/usb/devices')
     
     route_string = read_file('/proc/net/route')
@@ -233,8 +254,8 @@ class MyHandler(BaseHTTPRequestHandler):
                         <td>{info['processes']}</td>
                     </tr>
                     <tr>
-                        <td>Lista de unidades de disco, com capacidade total de cada unidade</td>
-                        <td>-</td>
+                        <td>Lista de unidades de disco, com capacidade total de cada unidade (MB)</td>
+                        <td>{info['disk']}</td>
                     </tr>
                     <tr>
                         <td>Lista de dispositivos USB, com a respectiva porta em que estão conectados</td>
