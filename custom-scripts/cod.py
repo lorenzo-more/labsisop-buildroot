@@ -131,8 +131,12 @@ def get_system_info():
 
     info.update({'disk': html_disk})
 
+    html_usb = '<ul style="list-style-type: none; padding: 0;">'
+    for device in os.listdir('/sys/bus/usb/devices'):
+        html_usb += f"<li>{device}</li>"
+    html_usb += '</ul>'
 
-    info['usb_devices'] = read_file('/sys/bus/usb/devices')
+    info.update({'usb_devices': html_usb})
     
     lines = read_file('/proc/net/route').splitlines()
 
@@ -143,7 +147,6 @@ def get_system_info():
 
     info.update({'route': html_net})
 
-    #info['route'] = read_file('/proc/net/route')
     return info
 
 HOST_NAME = '127.0.0.1' # !!!REMEMBER TO CHANGE THIS!!!
