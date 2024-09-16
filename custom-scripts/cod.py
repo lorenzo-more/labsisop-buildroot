@@ -102,7 +102,7 @@ def get_system_info():
             except Exception:
                 continue
 
-    html_processes = '<ul>'
+    html_processes = '<ul style="list-style-type: none; padding: 0;">'
     for pid, pname in processes:
         html_processes += f"<li>{pid}: {pname}</li>"
                 
@@ -124,26 +124,24 @@ def get_system_info():
 
             disk_info.append((name, round(blocks)))
 
-    html_disk = '<ul>'
+    html_disk = '<ul style="list-style-type: none; padding: 0;">'
     for name, blocks in disk_info:
-                html_disk += f"<li>{name}: {blocks} MB</li>"
+        html_disk += f"<li>{name}: {blocks} MB</li>"
     html_disk += '</ul>'
 
     info.update({'disk': html_disk})
 
-    
 
     info['usb_devices'] = read_file('/sys/bus/usb/devices')
     
-    route_string = read_file('/proc/net/route')
-    lines = route_string.splitlines()
+    lines = read_file('/proc/net/route').splitlines()
 
-    route_line = ''
-
+    html_net = '<ul style="list-style-type: none; padding: 0;">'
     for line in lines:
-        route_line += line + "\n"
+        html_net += f"<li>{line}</li>"
+    html_net += '</ul>'
 
-    info.update({'route': route_line})
+    info.update({'route': html_net})
 
     #info['route'] = read_file('/proc/net/route')
     return info
@@ -208,6 +206,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 }}
                 .info-table td {{
                     background-color: #fff;
+                }}
             </style>
         </head>
         <body>
