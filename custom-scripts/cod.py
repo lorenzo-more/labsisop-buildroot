@@ -149,7 +149,7 @@ def get_system_info():
 
     return info
 
-HOST_NAME = '127.0.0.1' # !!!REMEMBER TO CHANGE THIS!!!
+HOST_NAME = '0.0.0.0' # !!!REMEMBER TO CHANGE THIS!!!
 PORT_NUMBER = 8000
 
 class MyHandler(BaseHTTPRequestHandler):
