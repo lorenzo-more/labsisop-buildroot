@@ -10,6 +10,7 @@ chmod +x $BASE_DIR/target/etc/init.d/S41network-config
 
 # compiling c code
 $BASE_DIR/host/usr/bin/i686-buildroot-linux-uclibc-gcc custom-scripts/syscall_test.c -o $BASE_DIR/target/usr/bin/syscall_test
+$BASE_DIR/host/usr/bin/i686-buildroot-linux-uclibc-gcc disk-test/disk-test.c -o $BASE_DIR/target/usr/bin/disk-test
 
 # compiling driver
 make -C $BASE_DIR/../modules/simple_driver/
