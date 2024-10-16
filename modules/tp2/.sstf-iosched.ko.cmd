@@ -1,0 +1,1 @@
+cmd_/workspaces/labsisop-buildroot/modules/tp2/sstf-iosched.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /workspaces/labsisop-buildroot/modules/tp2/sstf-iosched.ko /workspaces/labsisop-buildroot/modules/tp2/sstf-iosched.o /workspaces/labsisop-buildroot/modules/tp2/sstf-iosched.mod.o ;  true
