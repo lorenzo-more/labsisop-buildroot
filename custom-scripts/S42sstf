@@ -6,7 +6,7 @@
 case "$1" in
   start)
 	modprobe sstf-iosched
-	echo sstf > /sys/block/sda/queue/scheduler
+	echo sstf > /sys/block/sdb/queue/scheduler
 	;;
   stop)
 	

@@ -3,13 +3,14 @@
  *
  * For Kernel 4.13.9
  */
-
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
 #include <linux/bio.h>
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/init.h>
+
+long long unsigned int ultima_pos = 0;
 
 /* SSTF data structure. */
 struct sstf_data {
@@ -28,41 +29,68 @@ static int sstf_dispatch(struct request_queue *q, int force){
 	char direction = 'R';
 	struct request *rq;
 
-	/* Aqui deve-se retirar uma requisição da fila e enviá-la para processamento.
-	 * Use como exemplo o driver noop-iosched.c. Veja como a requisição é tratada.
-	 *
-	 * Antes de retornar da função, imprima o sector que foi atendido.
-	 */
-
 	rq = list_first_entry_or_null(&nd->queue, struct request, queuelist);
 	if (rq) {
-		list_del_init(&rq->queuelist);
+		ultima_pos = blk_rq_pos(rq);
+        list_del_init(&rq->queuelist);
 		elv_dispatch_sort(q, rq);
-		printk(KERN_EMERG "[SSTF] dsp %c %llu\n", direction, blk_rq_pos(rq));
+		printk(KERN_EMERG "[SSTF] dsp %c %llu\n", direction, ultima_pos);
 
 		return 1;
 	}
 	return 0;
 }
 
+
 static void sstf_add_request(struct request_queue *q, struct request *rq){
+	printk(KERN_EMERG "[SSTF] add %c %llu", direction, blk_rq_pos(rq));
 	struct sstf_data *nd = q->elevator->elevator_data;
 	char direction = 'R';
 
-	/* Aqui deve-se adicionar uma requisição na fila do driver.
-	 * Use como exemplo o driver noop-iosched.c
-	 *
-	 * Antes de retornar da função, imprima o sector que foi adicionado na lista.
-	 */
+	// adiciona na tail quando lista vazia
+	if(head_req == NULL){
+		list_add_tail(&rq->queuelist, &nd->queue);
+        printk(KERN_EMERG "[SSTF] add %c %llu\n", direction, blk_rq_pos(rq));
+		return;
+	}
 
+	struct list_head *position;
+	long long unsigned int req_pos = blk_rq_pos(rq);
+	struct request *head_req = list_first_entry_or_null(&nd->queue, struct request, queuelist);
+	long long unsigned int head_pos = (long long unsigned int) blk_rq_pos(head_req);
+
+	// adiciona na head caso a distancia seja menor que head atual
+	if(abs(req_pos - ultima_pos) < abs(head_pos  - ultima_pos)){
+		struct list_head *old_head = &nd->queue;
+        struct list_head *new_head = &rq->queuelist;
+        list_add(new_head, old_head);
+		return;
+	}
+
+    // meio da lista: se a distacia entre rq e o nodo atual for menor que nodo atual e seu sucessor
+	position = (&(nd -> queue))->next;
+	while(position->next != &(nd -> queue)){
+		struct list_head *next = position->next;
+		struct request *curE = list_entry(position, struct request, queuelist);
+		struct request *nextE = list_entry(next, struct request, queuelist);
+		long long unsigned int curPos = blk_rq_pos(curE);
+		long long unsigned int nextPos = blk_rq_pos(nextE);
+
+		if(abs(curPos - nextPos) > abs(curPos - req_pos)){
+			list_add(&rq->queuelist, position);
+            return;
+		}
+		position = next;
+	}
+
+	// adiciona na tail
 	list_add_tail(&rq->queuelist, &nd->queue);
-	printk(KERN_EMERG "[SSTF] add %c %llu\n", direction, blk_rq_pos(rq));
+    printk(KERN_EMERG "[SSTF] add %c %llu\n", direction, blk_rq_pos(rq));
 }
 
 static int sstf_init_queue(struct request_queue *q, struct elevator_type *e){
 	struct sstf_data *nd;
 	struct elevator_queue *eq;
-
 	/* Implementação da inicialização da fila (queue).
 	 *
 	 * Use como exemplo a inicialização da fila no driver noop-iosched.c
@@ -80,7 +108,7 @@ static int sstf_init_queue(struct request_queue *q, struct elevator_type *e){
 	}
 	eq->elevator_data = nd;
 
-	INIT_LIST_HEAD(&nd->queue);
+	INIT_LIST_HEAD(&nd->queue);	
 
 	spin_lock_irq(q->queue_lock);
 	q->elevator = eq;
