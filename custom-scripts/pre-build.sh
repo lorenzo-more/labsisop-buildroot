@@ -14,7 +14,10 @@ chmod +x $BASE_DIR/target/etc/init.d/S42sstf
 # compiling c code
 #$BASE_DIR/host/usr/bin/i686-buildroot-linux-uclibc-gcc custom-scripts/syscall_test.c -o $BASE_DIR/target/usr/bin/syscall_test
 #$BASE_DIR/host/usr/bin/i686-buildroot-linux-uclibc-gcc disk-test/disk-test.c -o $BASE_DIR/target/usr/bin/disk-test
+$BASE_DIR/host/usr/bin/i686-buildroot-linux-uclibc-gcc custom-scripts/deadline.c -o $BASE_DIR/target/usr/bin/deadline
+$BASE_DIR/host/usr/bin/i686-buildroot-linux-uclibc-gcc custom-scripts/setpriority.c -o $BASE_DIR/target/usr/bin/setpriority
+
 
 # compiling driver
 #make -C $BASE_DIR/../modules/simple_driver/
-make -C $BASE_DIR/../modules/tp2/
+#make -C $BASE_DIR/../modules/tp2/
