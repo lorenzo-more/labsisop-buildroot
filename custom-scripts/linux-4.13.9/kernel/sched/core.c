@@ -5030,10 +5030,9 @@ SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
 	case SCHED_NORMAL:
 	case SCHED_BATCH:
 	case SCHED_IDLE:
-		ret = 0;
 	case SCHED_LOW_IDLE:
 		ret = 0;
-		break;
+
 	}
 	return ret;
 }
@@ -5059,7 +5058,6 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 	case SCHED_NORMAL:
 	case SCHED_BATCH:
 	case SCHED_IDLE:
-		ret = 0;
 	case SCHED_LOW_IDLE:
 		ret = 0;
 	}

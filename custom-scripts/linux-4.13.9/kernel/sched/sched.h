@@ -127,7 +127,7 @@ static inline int idle_policy(int policy)
 }
 static inline int idle_low_policy(int policy)
 {
-	return policy == SCHED_LOW_IDLE
+	return policy == SCHED_LOW_IDLE;
 }
 static inline int fair_policy(int policy)
 {

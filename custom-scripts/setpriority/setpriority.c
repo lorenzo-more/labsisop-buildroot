@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
 	timesleep = atoi(argv[1]);
 	pthread_create(&thr, NULL, run, NULL);
-	setpriority(&thr, SCHED_FIFO, 1);
+	setpriority(&thr, SCHED_LOW_IDLE, 0);
 	sleep(timesleep);
 	running = 0;
 	pthread_join(thr, NULL);
