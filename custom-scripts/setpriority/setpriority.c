@@ -5,6 +5,8 @@
 #include <string.h>
 #include <linux/sched.h>
 
+#define SCHED_LOW_IDLE 7
+
 volatile int running = 1;
 
 void *run(void *data)
